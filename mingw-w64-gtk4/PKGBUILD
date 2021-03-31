@@ -54,11 +54,15 @@ build() {
     --wrap-mode=nodownload \
     --auto-features=enabled \
     "${extra_config[@]}" \
+    -Dx11-backend=false \
+    -Dwayland-backend=false \
+    -Dwin32-backend=true \
+    -Dvulkan=disabled \
+    -Dintrospection=enabled \
+    -Dgtk:werror=true \    
     -Dbuild-examples=false \
     -Dbuild-tests=false \
-    -Dman-pages=true \
     -Dmacos-backend=false \
-    -Dintrospection=enabled \
     ../gtk-${pkgver}
 
   meson compile
