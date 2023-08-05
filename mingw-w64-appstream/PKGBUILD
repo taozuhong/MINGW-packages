@@ -1,0 +1,54 @@
+# Maintainer: Taozuhong <taozuhong@hotmail.com>
+
+_realname=appstream
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.0.0
+pkgrel=1
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
+pkgdesc="Tools and libraries to work with AppStream metadata (mingw-w64)"
+depends=("${MINGW_PACKAGE_PREFIX}-glib2"
+         "${MINGW_PACKAGE_PREFIX}-glib-networking"
+         "${MINGW_PACKAGE_PREFIX}-curl"
+         "${MINGW_PACKAGE_PREFIX}-libxml2"
+         "${MINGW_PACKAGE_PREFIX}-libyaml"
+         "${MINGW_PACKAGE_PREFIX}-libxmlb")
+makedepends=("${MINGW_PACKAGE_PREFIX}-gobject-introspection"
+             "${MINGW_PACKAGE_PREFIX}-meson"
+             "${MINGW_PACKAGE_PREFIX}-pkgconf"
+             "${MINGW_PACKAGE_PREFIX}-vala"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-gperf")
+options=('strip' 'staticlibs')
+license=("LGPL")
+url="https://github.com/ximion/appstream"
+# source=(${_realname}-${pkgver}.tar.gz::"https://github.com/ximion/appstream/archive/refs/tags/v${pkgver}.tar.gz")
+source=("${pkgname%-git}::git+https://github.com/ximion/appstream.git")
+sha256sums=('SKIP')
+
+prepare() {
+  # cd "${srcdir}"/${_realname}-${pkgver}
+  cd "${srcdir}"/${pkgname%-git}
+}
+
+build() {
+  mkdir -p build-${MSYSTEM} && cd build-${MSYSTEM}
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+  ${MINGW_PREFIX}/bin/meson.exe \
+    --prefix=${MINGW_PREFIX} \
+    --buildtype=plain \
+    -Dsystemd=false \
+    -Dstemming=false \
+    "../${pkgname%-git}"
+
+  ${MINGW_PREFIX}/bin/meson.exe compile
+}
+
+package() {
+  cd build-${MSYSTEM}
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/meson.exe install
+
+  install -Dm644 "${srcdir}/${pkgname%-git}/COPYING" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
+}
