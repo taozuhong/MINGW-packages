@@ -1,0 +1,48 @@
+# Maintainer: Taozuhong <taozuhong@hotmail.com>
+
+pkgname=pdfium
+pkgver=8046b
+pkgrel=1
+pkgdesc="PDFium, Google's PDF rendering library, prebuilt by pdfium-lib"
+arch=('x86_64')
+url="https://github.com/paulocoutinhox/pdfium-lib"
+license=('BSD-3-Clause')
+depends=('gcc-libs' 'glibc')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+provides=('pdfium' 'libpdfium.so')
+conflicts=('pdfium')
+
+source=(
+    "$pkgname-$pkgver.tar.gz::$url/releases/download/$pkgver/linux.tgz"
+    "LICENSE-$pkgver.md::https://raw.githubusercontent.com/paulocoutinhox/pdfium-lib/$pkgver/LICENSE.md"
+)
+
+# Run updpkgsums to fill these in.
+sha256sums=('SKIP'
+					   'SKIP')
+					   
+package() {
+    # The archive expands to a single release directory.
+    cd "$srcdir/release"
+
+    install -Dm755 "lib/x64/libpdfium.so" "${pkgdir}"${MINGW_PREFIX}/lib/libpdfium.so"
+
+    install -d "${pkgdir}"${MINGW_PREFIX}/include/pdfium"
+    cp -a include/. "${pkgdir}"${MINGW_PREFIX}/include/pdfium/"
+    find "${pkgdir}"${MINGW_PREFIX}/include/pdfium" -type f -exec chmod 644 {} +
+
+    install -Dm644 "$srcdir/LICENSE-$pkgver.md" "${pkgdir}"${MINGW_PREFIX}/share/licenses/$pkgname/LICENSE.md"
+
+    install -Dm644 /dev/stdin "${pkgdir}"${MINGW_PREFIX}/lib/pkgconfig/pdfium.pc" <<EOF
+prefix=\${MINGW_PREFIX}
+libdir=\${prefix}/lib
+includedir=\${prefix}/include/pdfium
+
+Name: PDFium
+Description: PDF rendering library
+URL: $url
+Version: $pkgver
+Libs: -L\${libdir} -lpdfium
+Cflags: -I\${includedir}
+EOF
+}
